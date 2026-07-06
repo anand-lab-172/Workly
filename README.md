@@ -1,10 +1,10 @@
-# Mission Board — a free, self-hosted Monday.com alternative
+# Workly — a free, self-hosted Monday.com alternative
 
 A single-file project management board: boards → groups → items, with a Table view (grouped rows, inline status/priority editing) and a Kanban view (drag cards between statuses). No account, no subscription, no server — it runs entirely in the browser and saves to your browser's local storage. Export/import JSON any time to back up or move data.
 
 ## What you get vs. Monday.com
 
-| Monday.com | Mission Board |
+| Monday.com | Workly |
 |---|---|
 | Multiple boards | ✅ Multiple boards, sidebar switcher |
 | Groups with color bars | ✅ Same, with progress bar per group |
