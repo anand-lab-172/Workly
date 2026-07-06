@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MISSION BOARD // Project Ops</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0e14;
+    --bg-grid: rgba(53,230,255,0.025);
+    --panel:#0f1420;
+    --panel-alt:#141b28;
+    --border:#212b3a;
+    --border-soft:#1a2230;
+    --text:#dbe3ee;
+    --text-dim:#6b7686;
+    --text-faint:#3f4a5c;
+    --amber:#ffb020;
+    --amber-dim:#7a5a1a;
+    --cyan:#35e6ff;
+    --cyan-dim:#12586b;
+    --red:#ff5c5c;
+    --red-dim:#5c2323;
+    --green:#4ade80;
+    --radius:3px;
+    --mono:'JetBrains Mono', ui-monospace, monospace;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);}
+  body{
+    background-image:
+      linear-gradient(var(--bg-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  ::selection{background:var(--amber-dim);color:#fff;}
+  button{font-family:var(--mono);cursor:pointer;}
+  input,select,textarea{font-family:var(--mono);}
+  .app{display:flex;height:100vh;overflow:hidden;}
+
+  /* SIDEBAR */
+  .sidebar{
+    width:250px;flex-shrink:0;background:var(--panel);
+    border-right:1px solid var(--border);
+    display:flex;flex-direction:column;
+    padding:18px 14px;
+  }
+  .brand{
+    font-weight:800;letter-spacing:2px;font-size:13px;color:var(--amber);
+    display:flex;align-items:center;gap:10px;margin-bottom:4px;
+  }
+  .beacon{width:18px;height:18px;perspective:120px;flex-shrink:0;}
+  .beacon .face{
+    width:100%;height:100%;
+    background:linear-gradient(135deg, var(--cyan), var(--amber));
+    box-shadow:0 0 10px rgba(53,230,255,.55), inset 0 0 4px rgba(255,255,255,.5);
+    animation:beaconSpin 3.2s linear infinite;
+  }
+  @keyframes beaconSpin{
+    0%{transform:rotateX(55deg) rotateZ(45deg) rotateY(0deg);}
+    100%{transform:rotateX(55deg) rotateZ(45deg) rotateY(360deg);}
+  }
+  .sub{font-size:10px;color:var(--text-faint);letter-spacing:1.5px;margin-bottom:20px;}
+  .board-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:2px;}
+  .board-item{
+    display:flex;align-items:center;gap:8px;padding:9px 10px;border-radius:var(--radius);
+    color:var(--text-dim);font-size:12.5px;border:1px solid transparent;
+  }
+  .board-item:hover{background:var(--panel-alt);color:var(--text);cursor:pointer;}
+  .board-item.active{background:var(--panel-alt);border-color:var(--border);color:var(--amber);}
+  .board-item .ico{color:var(--cyan);font-size:13px;}
+  .board-item .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .board-item .del{opacity:0;color:var(--red);font-size:11px;}
+  .board-item:hover .del{opacity:1;}
+  .btn-ghost{
+    background:transparent;border:1px dashed var(--border);color:var(--text-dim);
+    padding:9px;border-radius:var(--radius);font-size:11px;letter-spacing:1px;margin-top:8px;
+  }
+  .btn-ghost:hover{border-color:var(--cyan);color:var(--cyan);}
+  .sidebar-footer{display:flex;gap:6px;margin-top:14px;padding-top:14px;border-top:1px solid var(--border);}
+  .sidebar-footer button{
+    flex:1;background:var(--panel-alt);border:1px solid var(--border);color:var(--text-dim);
+    font-size:10px;letter-spacing:1px;padding:8px 4px;border-radius:var(--radius);
+  }
+  .sidebar-footer button:hover{color:var(--cyan);border-color:var(--cyan-dim);}
+
+  /* MAIN */
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{
+    display:flex;align-items:center;gap:14px;padding:16px 22px;
+    border-bottom:1px solid var(--border);background:linear-gradient(180deg, var(--panel), var(--bg));
+    flex-wrap:wrap;position:relative;overflow:hidden;
+  }
+  .topbar::after{
+    content:"";position:absolute;top:0;left:-25%;width:25%;height:2px;
+    background:linear-gradient(90deg, transparent, var(--cyan), transparent);
+    opacity:.55;animation:hudScan 6s linear infinite;
+  }
+  @keyframes hudScan{0%{left:-25%;}100%{left:125%;}}
+  .topbar h1{
+    font-size:16px;margin:0;letter-spacing:1px;font-weight:700;color:var(--text);
+    flex-shrink:0;
+  }
+  .topbar h1 .code{color:var(--text-faint);font-size:11px;font-weight:400;margin-left:8px;}
+  .view-toggle{display:flex;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;}
+  .view-toggle button{
+    background:var(--panel-alt);border:none;color:var(--text-dim);padding:7px 14px;font-size:10.5px;letter-spacing:1px;
+  }
+  .view-toggle button.active{background:var(--cyan-dim);color:var(--cyan);}
+  #searchInput{
+    background:var(--panel-alt);border:1px solid var(--border);color:var(--text);
+    padding:8px 12px;border-radius:var(--radius);font-size:12px;width:200px;
+  }
+  #searchInput:focus{outline:none;border-color:var(--cyan);}
+  .spacer{flex:1;}
+  .btn-primary{
+    background:var(--amber);color:#1a1200;border:none;padding:9px 16px;border-radius:var(--radius);
+    font-size:11px;font-weight:700;letter-spacing:1px;transition:transform .1s ease, box-shadow .15s ease;
+    box-shadow:0 3px 0 var(--amber-dim);
+  }
+  .btn-primary:hover{background:#ffc250;transform:translateY(-1px);box-shadow:0 4px 0 var(--amber-dim);}
+  .btn-primary:active{transform:translateY(2px);box-shadow:0 1px 0 var(--amber-dim);}
+  .board-body{flex:1;overflow:auto;padding:20px 22px;}
+  .empty-state{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;
+    color:var(--text-faint);gap:10px;
+  }
+  .empty-state .glyph{font-size:38px;color:var(--border-soft);}
+
+  /* TABLE VIEW */
+  .group-block{margin-bottom:26px;border:1px solid var(--border-soft);border-radius:var(--radius);overflow:hidden;transition:box-shadow .2s ease, transform .2s ease;animation:fadeSlideUp .4s cubic-bezier(.2,.7,.3,1) both;}
+  .group-block:hover{box-shadow:0 8px 24px rgba(0,0,0,.35);}
+  @keyframes fadeSlideUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+  .group-head{
+    display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--panel);
+    border-left:4px solid var(--gcolor, var(--cyan));
+  }
+  .group-head .gname{font-weight:700;font-size:12.5px;letter-spacing:1px;flex:1;}
+  .group-head .gcount{color:var(--text-faint);font-size:11px;}
+  .group-head .gprog{width:110px;height:5px;background:var(--panel-alt);border-radius:3px;overflow:hidden;}
+  .group-head .gprog-fill{height:100%;background:var(--green);}
+  .group-head button{background:none;border:1px solid var(--border);color:var(--text-dim);font-size:10px;padding:5px 9px;border-radius:var(--radius);}
+  .group-head button:hover{color:var(--cyan);border-color:var(--cyan-dim);}
+
+  table.items{width:100%;border-collapse:collapse;background:var(--bg);}
+  table.items th{
+    text-align:left;font-size:9.5px;letter-spacing:1.5px;color:var(--text-faint);
+    padding:8px 12px;border-bottom:1px solid var(--border-soft);font-weight:600;
+    user-select:none;
+  }
+  table.items th[data-sort]{cursor:pointer;transition:color .15s ease;}
+  table.items th[data-sort]:hover{color:var(--cyan);}
+  table.items th.sort-active{color:var(--amber);}
+  .sort-arrow{margin-left:5px;font-size:8px;display:inline-block;opacity:.7;}
+  th.sort-active .sort-arrow{opacity:1;}
+  table.items td{
+    padding:9px 12px;border-bottom:1px solid var(--border-soft);font-size:12px;vertical-align:middle;
+  }
+  table.items tr:hover{background:var(--panel-alt);}
+  .col-code{color:var(--text-faint);font-size:10.5px;width:70px;}
+  .col-title{cursor:pointer;color:var(--text);}
+  .col-title:hover{color:var(--cyan);text-decoration:underline;}
+  .pill{
+    display:inline-block;padding:3px 9px;border-radius:12px;font-size:9.5px;letter-spacing:.5px;font-weight:600;
+    border:1px solid transparent;
+  }
+  select.pill-select{
+    -webkit-appearance:none;appearance:none;border-radius:12px;font-size:9.5px;letter-spacing:.5px;font-weight:600;
+    padding:3px 22px 3px 9px;border:1px solid var(--border);background-color:var(--panel-alt);color:var(--text);
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-dim) 50%), linear-gradient(135deg, var(--text-dim) 50%, transparent 50%);
+    background-position: calc(100% - 12px) center, calc(100% - 8px) center; background-size:4px 4px;background-repeat:no-repeat;
+  }
+  .prio-P1{color:var(--red);}
+  .prio-P2{color:var(--amber);}
+  .prio-P3{color:var(--cyan);}
+  .tag{background:var(--panel-alt);color:var(--text-dim);padding:2px 7px;border-radius:2px;font-size:9.5px;margin-right:4px;border:1px solid var(--border-soft);}
+  .col-time{color:var(--text-dim);font-size:11.5px;}
+  .col-time .clock{color:var(--amber);margin-right:4px;}
+  .ctime{color:var(--amber);}
+  .row-link{margin-left:7px;text-decoration:none;font-size:11px;opacity:.75;}
+  .row-link:hover{opacity:1;}
+  .note-link{color:var(--cyan);text-decoration:underline;}
+  .note-preview{
+    margin-top:6px;font-size:11px;color:var(--text-dim);line-height:1.6;
+    background:var(--bg);border:1px solid var(--border-soft);border-radius:var(--radius);
+    padding:8px 10px;word-break:break-word;max-height:70px;overflow-y:auto;
+  }
+  .time-preview{margin-top:5px;font-size:11px;color:var(--amber);}
+  @keyframes flashDone{
+    0%{box-shadow:0 0 0 0 rgba(74,222,128,.75);}
+    55%{box-shadow:0 0 22px 6px rgba(74,222,128,.5);}
+    100%{box-shadow:0 0 0 0 rgba(74,222,128,0);}
+  }
+  .flash-done{animation:flashDone .9s ease-out;}
+  tr.flash-done{outline:1px solid rgba(74,222,128,.5);}
+  .row-actions{opacity:0;display:flex;gap:6px;}
+  tr:hover .row-actions{opacity:1;}
+  .row-actions button{background:none;border:none;color:var(--text-faint);font-size:12px;}
+  .row-actions button:hover{color:var(--red);}
+  .add-row-btn{padding:9px 14px;font-size:11px;color:var(--text-faint);background:none;border:none;width:100%;text-align:left;}
+  .add-row-btn:hover{color:var(--cyan);background:var(--panel-alt);}
+
+  /* KANBAN VIEW */
+  .kanban{display:flex;gap:14px;height:100%;align-items:flex-start;}
+  .kcol{
+    background:var(--panel);border:1px solid var(--border-soft);border-radius:var(--radius);
+    width:270px;flex-shrink:0;display:flex;flex-direction:column;max-height:100%;
+    animation:fadeSlideUp .4s cubic-bezier(.2,.7,.3,1) both;
+  }
+  .kcol-head{
+    padding:10px 12px;border-bottom:2px solid var(--kcolor,var(--cyan));display:flex;align-items:center;gap:8px;
+  }
+  .kcol-head .dot{width:7px;height:7px;border-radius:50%;background:var(--kcolor,var(--cyan));}
+  .kcol-head .label{font-size:11px;font-weight:700;letter-spacing:1px;flex:1;}
+  .kcol-head .cnt{font-size:10px;color:var(--text-faint);}
+  .kcol-body{padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:60px;}
+  .kcol-body.dragover{background:var(--panel-alt);}
+  .card{
+    background:var(--panel-alt);border:1px solid var(--border-soft);border-left:3px solid var(--gcolor,var(--cyan));
+    border-radius:var(--radius);padding:10px;cursor:grab;
+    transition:transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s ease;
+    transform-style:preserve-3d;will-change:transform;
+  }
+  .card:active{cursor:grabbing;}
+  .card.dragging{opacity:.35;}
+  .card .ctop{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+  .card .ccode{font-size:9.5px;color:var(--text-faint);}
+  .card .ctitle{font-size:12.5px;color:var(--text);margin-bottom:7px;}
+  .card .cmeta{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:var(--text-dim);}
+  .card .cowner{color:var(--text-dim);}
+
+  /* MODAL */
+  .overlay{
+    position:fixed;inset:0;background:rgba(4,6,10,.75);backdrop-filter:blur(2px);
+    display:flex;align-items:center;justify-content:center;z-index:100;
+    perspective:1200px;animation:overlayIn .18s ease;
+  }
+  @keyframes overlayIn{from{opacity:0;}to{opacity:1;}}
+  .modal{
+    background:var(--panel);border:1px solid var(--border);border-radius:4px;width:420px;max-width:92vw;
+    max-height:88vh;overflow-y:auto;box-shadow:0 0 0 1px var(--border-soft), 0 30px 70px rgba(0,0,0,.65);
+    animation:modalIn .38s cubic-bezier(.16,.84,.3,1);
+    transform-origin:top center;
+  }
+  @keyframes modalIn{
+    0%{opacity:0;transform:rotateX(-18deg) translateY(40px) scale(.92);}
+    100%{opacity:1;transform:rotateX(0deg) translateY(0) scale(1);}
+  }
+  .modal-head{
+    padding:14px 18px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;
+  }
+  .modal-head h3{margin:0;font-size:13px;letter-spacing:1px;color:var(--amber);}
+  .modal-head .x{background:none;border:none;color:var(--text-dim);font-size:16px;}
+  .modal-head .x:hover{color:var(--red);}
+  .modal-body{padding:16px 18px;display:flex;flex-direction:column;gap:12px;}
+  .field label{display:block;font-size:10px;letter-spacing:1px;color:var(--text-faint);margin-bottom:5px;}
+  .field input,.field select,.field textarea{
+    width:100%;background:var(--bg);border:1px solid var(--border);color:var(--text);
+    padding:8px 10px;border-radius:var(--radius);font-size:12.5px;
+  }
+  .field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--cyan);}
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .swatches{display:flex;gap:8px;}
+  .swatch{width:22px;height:22px;border-radius:50%;border:2px solid transparent;cursor:pointer;}
+  .swatch.sel{border-color:#fff;}
+  .modal-foot{
+    padding:14px 18px;border-top:1px solid var(--border-soft);display:flex;justify-content:space-between;gap:8px;
+  }
+  .btn-secondary{background:transparent;border:1px solid var(--border);color:var(--text-dim);padding:9px 14px;border-radius:var(--radius);font-size:11px;}
+  .btn-secondary:hover{color:var(--text);border-color:var(--text-dim);}
+  .btn-danger{background:transparent;border:1px solid var(--red-dim);color:var(--red);padding:9px 14px;border-radius:var(--radius);font-size:11px;}
+  .btn-danger:hover{background:var(--red-dim);}
+  ::-webkit-scrollbar{width:8px;height:8px;}
+  ::-webkit-scrollbar-track{background:var(--bg);}
+  ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+  ::-webkit-scrollbar-thumb:hover{background:var(--text-faint);}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><span class="beacon"><span class="face"></span></span>MISSION BOARD</div>
+    <div class="sub">PROJECT OPS · LOCAL-FIRST</div>
+    <div class="board-list" id="boardList"></div>
+    <button class="btn-ghost" id="newBoardBtn">+ NEW BOARD</button>
+    <div class="sidebar-footer">
+      <button id="exportBtn" title="Export all data as JSON">EXPORT</button>
+      <button id="importBtn" title="Import a JSON backup">IMPORT</button>
+      <input type="file" id="importFile" hidden accept="application/json">
+    </div>
+  </aside>
+  <main class="main">
+    <div class="topbar">
+      <h1 id="boardTitle">—</h1>
+      <div class="view-toggle" id="viewToggle">
+        <button data-view="table" class="active">TABLE</button>
+        <button data-view="kanban">KANBAN</button>
+      </div>
+      <input id="searchInput" placeholder="SEARCH ITEMS...">
+      <div class="spacer"></div>
+      <button class="btn-secondary" id="newGroupBtn">+ GROUP</button>
+      <button class="btn-primary" id="newItemBtn">+ NEW ITEM</button>
+    </div>
+    <div class="board-body" id="boardBody"></div>
+  </main>
+</div>
+<div id="modalRoot"></div>
+
+<script>
+(function(){
+  "use strict";
+  const STORAGE_KEY = "missionboard_v1";
+  const PALETTE = ["#35e6ff","#ffb020","#ff5c5c","#4ade80","#a78bfa","#f472b6","#6b7686"];
+  const STATUS_TEMPLATE = [
+    {id:"s_backlog", label:"BACKLOG", color:"#6b7686"},
+    {id:"s_progress", label:"IN PROGRESS", color:"#35e6ff"},
+    {id:"s_blocked", label:"BLOCKED", color:"#ff5c5c"},
+    {id:"s_done", label:"DONE", color:"#4ade80"}
+  ];
+
+  function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
+
+  function seedData(){
+    const boardId = uid("brd");
+    const g1 = uid("grp"), g2 = uid("grp");
+    return {
+      activeBoardId: boardId,
+      activeView: "table",
+      sort: { field: null, dir: "asc" },
+      boards: [{
+        id: boardId,
+        name: "Website Launch",
+        icon: "◈",
+        prefix: "WEB",
+        counter: 4,
+        statuses: STATUS_TEMPLATE.map(s => ({...s})),
+        groups: [
+          {
+            id: g1, name: "Design Sprint", color: "#35e6ff",
+            items: [
+              {id: uid("itm"), code:"WEB-001", title:"Finalize homepage wireframes", statusId:"s_done", priority:"P2", owner:"Anand", due:"2026-07-02", time:"11:00", tags:["design"], notes:""},
+              {id: uid("itm"), code:"WEB-002", title:"Build component library", statusId:"s_progress", priority:"P1", owner:"Anand", due:"2026-07-10", time:"15:30", tags:["design","dev"], notes:"Reference: https://www.figma.com"}
+            ]
+          },
+          {
+            id: g2, name: "Launch Readiness", color:"#ffb020",
+            items: [
+              {id: uid("itm"), code:"WEB-003", title:"Set up analytics tracking", statusId:"s_backlog", priority:"P3", owner:"", due:"", time:"", tags:["ops"], notes:""},
+              {id: uid("itm"), code:"WEB-004", title:"Domain + SSL configuration", statusId:"s_blocked", priority:"P1", owner:"Anand", due:"2026-07-08", time:"09:00", tags:["ops"], notes:"Waiting on registrar transfer"}
+            ]
+          }
+        ]
+      }]
+    };
+  }
+
+  let state = load();
+
+  function load(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if(raw){
+        const parsed = JSON.parse(raw);
+        if(!parsed.sort) parsed.sort = { field: null, dir: "asc" };
+        return parsed;
+      }
+    }catch(e){ console.warn("Could not read saved data, starting fresh.", e); }
+    return seedData();
+  }
+  function save(){
+    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch(e){ console.warn("Could not save data.", e); }
+  }
+
+  function getBoard(){ return state.boards.find(b => b.id === state.activeBoardId) || state.boards[0]; }
+
+  // ---------- SIDEBAR ----------
+  function renderSidebar(){
+    const list = document.getElementById("boardList");
+    list.innerHTML = "";
+    state.boards.forEach(b => {
+      const el = document.createElement("div");
+      el.className = "board-item" + (b.id === state.activeBoardId ? " active" : "");
+      el.innerHTML = `<span class="ico">${b.icon || "◈"}</span><span class="name">${escapeHtml(b.name)}</span><span class="del" title="Delete board">✕</span>`;
+      el.addEventListener("click", (e) => {
+        if(e.target.classList.contains("del")){
+          e.stopPropagation();
+          if(state.boards.length === 1){ alert("At least one board must remain."); return; }
+          if(confirm(`Delete board "${b.name}"? This cannot be undone.`)){
+            state.boards = state.boards.filter(x => x.id !== b.id);
+            if(state.activeBoardId === b.id) state.activeBoardId = state.boards[0].id;
+            save(); renderAll();
+          }
+          return;
+        }
+        state.activeBoardId = b.id;
+        save(); renderAll();
+      });
+      list.appendChild(el);
+    });
+  }
+
+  // ---------- TOP BAR ----------
+  function renderTopbar(){
+    const b = getBoard();
+    document.getElementById("boardTitle").innerHTML = `${b.icon || "◈"} ${escapeHtml(b.name)} <span class="code">/${b.prefix}</span>`;
+    document.querySelectorAll("#viewToggle button").forEach(btn => {
+      btn.classList.toggle("active", btn.dataset.view === state.activeView);
+    });
+  }
+
+  // ---------- HELPERS ----------
+  function escapeHtml(str){
+    return String(str||"").replace(/[&<>"']/g, s => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[s]));
+  }
+  function progressForGroup(group, statuses){
+    if(!group.items.length) return 0;
+    const doneStatus = statuses[statuses.length-1];
+    const done = group.items.filter(i => i.statusId === doneStatus.id).length;
+    return Math.round((done/group.items.length)*100);
+  }
+  function matchesSearch(item, q){
+    if(!q) return true;
+    q = q.toLowerCase();
+    return item.title.toLowerCase().includes(q) ||
+      (item.owner||"").toLowerCase().includes(q) ||
+      (item.tags||[]).join(" ").toLowerCase().includes(q) ||
+      (item.code||"").toLowerCase().includes(q);
+  }
+
+  // ---------- SORTING ----------
+  const SORT_FIELDS = ["code","title","statusId","priority","owner","due","time"];
+  function sortValue(item, field, statuses){
+    switch(field){
+      case "code": return item.code || "";
+      case "title": return (item.title||"").toLowerCase();
+      case "statusId": {
+        const idx = statuses.findIndex(s=>s.id===item.statusId);
+        return idx === -1 ? 999 : idx;
+      }
+      case "priority": return {P1:0,P2:1,P3:2}[item.priority] ?? 9;
+      case "owner": return (item.owner||"").toLowerCase();
+      case "due": return item.due || "";
+      case "time": return item.time || "";
+      default: return "";
+    }
+  }
+  function sortItems(items, statuses){
+    const { field, dir } = state.sort || {};
+    if(!field) return items;
+    const arr = items.slice();
+    arr.sort((a,b) => {
+      const va = sortValue(a, field, statuses), vb = sortValue(b, field, statuses);
+      const aEmpty = va === "" || va === null || va === undefined;
+      const bEmpty = vb === "" || vb === null || vb === undefined;
+      if(aEmpty && !bEmpty) return 1;
+      if(bEmpty && !aEmpty) return -1;
+      if(va < vb) return dir === "asc" ? -1 : 1;
+      if(va > vb) return dir === "asc" ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }
+  function toggleSort(field){
+    if(!state.sort || state.sort.field !== field){
+      state.sort = { field, dir: "asc" };
+    } else if(state.sort.dir === "asc"){
+      state.sort.dir = "desc";
+    } else {
+      state.sort = { field: null, dir: "asc" };
+    }
+    save(); renderBoardBody();
+  }
+  function sortHeaderHtml(label, field, width){
+    const active = state.sort && state.sort.field === field;
+    const arrow = active ? (state.sort.dir === "asc" ? "▲" : "▼") : "⇅";
+    return `<th ${width?`style="width:${width}"`:""} data-sort="${field}" class="${active?"sort-active":""}">${label}<span class="sort-arrow">${arrow}</span></th>`;
+  }
+
+  // ---------- TIME FORMAT ----------
+  function formatTime12(t){
+    if(!t) return "";
+    const [hStr, mStr] = t.split(":");
+    let h = parseInt(hStr, 10);
+    const m = (mStr || "00").padStart(2,"0");
+    const suffix = h >= 12 ? "PM" : "AM";
+    h = h % 12; if(h === 0) h = 12;
+    return `${h}:${m} ${suffix}`;
+  }
+
+  // ---------- LINKIFY ----------
+  function firstUrl(text){
+    if(!text) return null;
+    const m = String(text).match(/(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/i);
+    if(!m) return null;
+    return /^https?:\/\//i.test(m[0]) ? m[0] : "https://" + m[0];
+  }
+  function linkify(rawText){
+    const text = String(rawText || "");
+    const urlRe = /(https?:\/\/[^\s<>"']+|www\.[^\s<>"']+)/gi;
+    let result = "", lastIndex = 0, m;
+    while((m = urlRe.exec(text)) !== null){
+      result += escapeHtml(text.slice(lastIndex, m.index));
+      const url = m[0];
+      const href = /^https?:\/\//i.test(url) ? url : "https://" + url;
+      result += `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" class="note-link">${escapeHtml(url)}</a>`;
+      lastIndex = urlRe.lastIndex;
+    }
+    result += escapeHtml(text.slice(lastIndex));
+    return result || '<span style="color:var(--text-faint)">No notes yet.</span>';
+  }
+
+  let flashItemId = null;
+
+  // ---------- TABLE VIEW ----------
+  function renderTableView(container){
+    const b = getBoard();
+    const q = document.getElementById("searchInput").value.trim();
+    container.innerHTML = "";
+    if(!b.groups.length){
+      container.innerHTML = emptyStateHtml("No groups yet", "Create a group to start organizing items.");
+      return;
+    }
+    b.groups.forEach((group, idx) => {
+      const filtered = sortItems(group.items.filter(i => matchesSearch(i, q)), b.statuses);
+      const block = document.createElement("div");
+      block.className = "group-block";
+      block.style.animationDelay = `${idx * 0.06}s`;
+      const prog = progressForGroup(group, b.statuses);
+      block.innerHTML = `
+        <div class="group-head" style="--gcolor:${group.color}">
+          <span class="gname">${escapeHtml(group.name)}</span>
+          <span class="gcount">${group.items.length} item${group.items.length===1?"":"s"}</span>
+          <div class="gprog" title="${prog}% complete"><div class="gprog-fill" style="width:${prog}%"></div></div>
+          <button data-action="add-item" data-group="${group.id}">+ ITEM</button>
+          <button data-action="del-group" data-group="${group.id}">DELETE</button>
+        </div>
+        <table class="items">
+          <thead><tr>
+            ${sortHeaderHtml("ID","code","70px")}
+            ${sortHeaderHtml("TITLE","title")}
+            ${sortHeaderHtml("STATUS","statusId","130px")}
+            ${sortHeaderHtml("PRI","priority","70px")}
+            ${sortHeaderHtml("OWNER","owner","110px")}
+            ${sortHeaderHtml("DUE","due","110px")}
+            ${sortHeaderHtml("TIME","time","90px")}
+            <th>TAGS</th><th style="width:40px"></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+        ${filtered.length===0 ? '<div style="padding:14px 16px;color:var(--text-faint);font-size:11px;">No matching items.</div>' : ""}
+      `;
+      const tbody = block.querySelector("tbody");
+      filtered.forEach(item => {
+        const tr = document.createElement("tr");
+        if(item.id === flashItemId) tr.className = "flash-done";
+        const link = firstUrl(item.notes);
+        tr.innerHTML = `
+          <td class="col-code">${escapeHtml(item.code)}</td>
+          <td class="col-title" data-action="edit-item" data-item="${item.id}" data-group="${group.id}">${escapeHtml(item.title)}${link?`<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="row-link" title="Open link in notes" onclick="event.stopPropagation()">🔗</a>`:""}</td>
+          <td>${statusSelectHtml(item, b.statuses)}</td>
+          <td>${prioSelectHtml(item)}</td>
+          <td>${escapeHtml(item.owner)||'<span style="color:var(--text-faint)">—</span>'}</td>
+          <td>${item.due||'<span style="color:var(--text-faint)">—</span>'}</td>
+          <td class="col-time">${item.time ? `<span class="clock">◷</span>${formatTime12(item.time)}` : '<span style="color:var(--text-faint)">—</span>'}</td>
+          <td>${(item.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join("")}</td>
+          <td><div class="row-actions"><button data-action="del-item" data-item="${item.id}" data-group="${group.id}" title="Delete item">✕</button></div></td>
+        `;
+        tbody.appendChild(tr);
+      });
+      const addRow = document.createElement("button");
+      addRow.className = "add-row-btn";
+      addRow.textContent = "+ Add item";
+      addRow.dataset.action = "add-item";
+      addRow.dataset.group = group.id;
+      block.appendChild(addRow);
+      container.appendChild(block);
+    });
+    flashItemId = null;
+  }
+
+  function statusSelectHtml(item, statuses){
+    const st = statuses.find(s=>s.id===item.statusId) || statuses[0];
+    const opts = statuses.map(s => `<option value="${s.id}" ${s.id===item.statusId?"selected":""}>${escapeHtml(s.label)}</option>`).join("");
+    return `<select class="pill-select" style="color:${st.color};border-color:${st.color}55" data-action="set-status" data-item="${item.id}">${opts}</select>`;
+  }
+  function prioSelectHtml(item){
+    const opts = ["P1","P2","P3"].map(p => `<option value="${p}" ${p===item.priority?"selected":""}>${p}</option>`).join("");
+    return `<select class="pill-select prio-${item.priority}" data-action="set-prio" data-item="${item.id}">${opts}</select>`;
+  }
+  function emptyStateHtml(title, sub){
+    return `<div class="empty-state"><div class="glyph">◈</div><div style="font-size:13px;color:var(--text-dim)">${title}</div><div style="font-size:11px">${sub}</div></div>`;
+  }
+  function attachTilt(el){
+    const MAX = 9;
+    el.addEventListener("mousemove", e => {
+      const r = el.getBoundingClientRect();
+      const px = (e.clientX - r.left) / r.width;
+      const py = (e.clientY - r.top) / r.height;
+      const rotY = (px - 0.5) * MAX * 2;
+      const rotX = (0.5 - py) * MAX * 2;
+      el.style.transform = `perspective(700px) rotateX(${rotX}deg) rotateY(${rotY}deg) translateZ(6px)`;
+      el.style.boxShadow = `${-rotY/2}px ${8-rotX/2}px 20px rgba(0,0,0,.45)`;
+    });
+    el.addEventListener("mouseleave", () => {
+      el.style.transform = "";
+      el.style.boxShadow = "";
+    });
+  }
+
+  // ---------- KANBAN VIEW ----------
+  function renderKanbanView(container){
+    const b = getBoard();
+    const q = document.getElementById("searchInput").value.trim();
+    container.innerHTML = "";
+    const kanban = document.createElement("div");
+    kanban.className = "kanban";
+    const allItems = [];
+    b.groups.forEach(g => g.items.forEach(i => allItems.push({...i, __group:g})));
+
+    b.statuses.forEach((status, sIdx) => {
+      const items = sortItems(allItems.filter(i => i.statusId === status.id && matchesSearch(i, q)), b.statuses);
+      const col = document.createElement("div");
+      col.className = "kcol";
+      col.style.setProperty("--kcolor", status.color);
+      col.style.animationDelay = `${sIdx * 0.06}s`;
+      col.innerHTML = `
+        <div class="kcol-head"><span class="dot"></span><span class="label">${escapeHtml(status.label)}</span><span class="cnt">${items.length}</span></div>
+        <div class="kcol-body" data-status="${status.id}"></div>
+      `;
+      const body = col.querySelector(".kcol-body");
+      items.forEach(item => {
+        const card = document.createElement("div");
+        card.className = "card" + (item.id === flashItemId ? " flash-done" : "");
+        card.draggable = true;
+        card.dataset.item = item.id;
+        card.dataset.group = item.__group.id;
+        card.style.setProperty("--gcolor", item.__group.color);
+        const link = firstUrl(item.notes);
+        card.innerHTML = `
+          <div class="ctop"><span class="ccode">${escapeHtml(item.code)}</span><span class="prio-${item.priority}" style="font-size:10px;font-weight:700">${item.priority}</span></div>
+          <div class="ctitle">${escapeHtml(item.title)}${link?`<a href="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer" class="row-link" title="Open link in notes" onclick="event.stopPropagation()">🔗</a>`:""}</div>
+          <div class="cmeta"><span class="cowner">${escapeHtml(item.owner)||"unassigned"}</span><span>${item.time?`<span class="ctime">◷ ${formatTime12(item.time)}</span> `:""}${item.due||""}</span></div>
+        `;
+        card.addEventListener("click", () => openItemModal(item.__group.id, item.id));
+        card.addEventListener("dragstart", e => {
+          card.classList.add("dragging");
+          e.dataTransfer.setData("text/plain", JSON.stringify({itemId:item.id, groupId:item.__group.id}));
+        });
+        card.addEventListener("dragend", () => card.classList.remove("dragging"));
+        attachTilt(card);
+        body.appendChild(card);
+      });
+      body.addEventListener("dragover", e => { e.preventDefault(); body.classList.add("dragover"); });
+      body.addEventListener("dragleave", () => body.classList.remove("dragover"));
+      body.addEventListener("drop", e => {
+        e.preventDefault(); body.classList.remove("dragover");
+        const data = JSON.parse(e.dataTransfer.getData("text/plain"));
+        setItemField(data.groupId, data.itemId, "statusId", status.id);
+      });
+      kanban.appendChild(col);
+    });
+    container.appendChild(kanban);
+  }
+
+  // ---------- MUTATIONS ----------
+  function setItemField(groupId, itemId, field, value){
+    const b = getBoard();
+    const g = b.groups.find(x=>x.id===groupId);
+    if(!g) return;
+    const item = g.items.find(x=>x.id===itemId);
+    if(!item) return;
+    item[field] = value;
+    if(field === "statusId" && b.statuses.length && value === b.statuses[b.statuses.length-1].id){
+      flashItemId = itemId;
+    }
+    save(); renderBoardBody();
+  }
+  function deleteItem(groupId, itemId){
+    const b = getBoard();
+    const g = b.groups.find(x=>x.id===groupId);
+    if(!g) return;
+    g.items = g.items.filter(x=>x.id!==itemId);
+    save(); renderBoardBody();
+  }
+  function deleteGroup(groupId){
+    const b = getBoard();
+    if(!confirm("Delete this group and all its items?")) return;
+    b.groups = b.groups.filter(x=>x.id!==groupId);
+    save(); renderBoardBody();
+  }
+  function nextItemCode(board){
+    board.counter = (board.counter||0) + 1;
+    return `${board.prefix}-${String(board.counter).padStart(3,"0")}`;
+  }
+
+  // ---------- RENDER ROOT ----------
+  function renderBoardBody(){
+    const container = document.getElementById("boardBody");
+    if(state.activeView === "table") renderTableView(container);
+    else renderKanbanView(container);
+  }
+  function renderAll(){
+    renderSidebar(); renderTopbar(); renderBoardBody();
+  }
+
+  // ---------- MODALS ----------
+  function openModal(html, onMount){
+    const root = document.getElementById("modalRoot");
+    root.innerHTML = `<div class="overlay" id="ovl"><div class="modal">${html}</div></div>`;
+    root.querySelector("#ovl").addEventListener("mousedown", e => { if(e.target.id==="ovl") closeModal(); });
+    if(onMount) onMount(root);
+  }
+  function closeModal(){ document.getElementById("modalRoot").innerHTML = ""; }
+
+  function openNewBoardModal(){
+    openModal(`
+      <div class="modal-head"><h3>NEW BOARD</h3><button class="x" data-close>✕</button></div>
+      <div class="modal-body">
+        <div class="field"><label>BOARD NAME</label><input id="mb-name" placeholder="e.g. Product Roadmap"></div>
+        <div class="field"><label>ITEM PREFIX</label><input id="mb-prefix" placeholder="e.g. PRD" maxlength="6"></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" data-close>CANCEL</button>
+        <button class="btn-primary" id="mb-save">CREATE BOARD</button>
+      </div>
+    `, root => {
+      root.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click", closeModal));
+      root.querySelector("#mb-save").addEventListener("click", () => {
+        const name = root.querySelector("#mb-name").value.trim() || "Untitled Board";
+        const prefix = (root.querySelector("#mb-prefix").value.trim() || name.slice(0,3)).toUpperCase();
+        const id = uid("brd");
+        state.boards.push({
+          id, name, icon:"◈", prefix, counter:0,
+          statuses: STATUS_TEMPLATE.map(s=>({...s})), groups: []
+        });
+        state.activeBoardId = id;
+        save(); closeModal(); renderAll();
+      });
+    });
+  }
+
+  function openNewGroupModal(){
+    let selColor = PALETTE[0];
+    openModal(`
+      <div class="modal-head"><h3>NEW GROUP</h3><button class="x" data-close>✕</button></div>
+      <div class="modal-body">
+        <div class="field"><label>GROUP NAME</label><input id="mg-name" placeholder="e.g. Sprint 12"></div>
+        <div class="field"><label>COLOR</label><div class="swatches" id="mg-swatches"></div></div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-secondary" data-close>CANCEL</button>
+        <button class="btn-primary" id="mg-save">CREATE GROUP</button>
+      </div>
+    `, root => {
+      const sw = root.querySelector("#mg-swatches");
+      PALETTE.forEach((c,idx) => {
+        const s = document.createElement("div");
+        s.className = "swatch" + (idx===0?" sel":"");
+        s.style.background = c;
+        s.addEventListener("click", () => { selColor = c; sw.querySelectorAll(".swatch").forEach(x=>x.classList.remove("sel")); s.classList.add("sel"); });
+        sw.appendChild(s);
+      });
+      root.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click", closeModal));
+      root.querySelector("#mg-save").addEventListener("click", () => {
+        const b = getBoard();
+        const name = root.querySelector("#mg-name").value.trim() || "New Group";
+        b.groups.push({id: uid("grp"), name, color: selColor, items: []});
+        save(); closeModal(); renderBoardBody();
+      });
+    });
+  }
+
+  function openItemModal(groupId, itemId){
+    const b = getBoard();
+    const isNew = !itemId;
+    const group = b.groups.find(g=>g.id===groupId) || b.groups[0];
+    if(!group){ alert("Create a group first."); return; }
+    const item = isNew ? {title:"", statusId:b.statuses[0].id, priority:"P2", owner:"", due:"", time:"", tags:[], notes:""} : group.items.find(i=>i.id===itemId);
+
+    openModal(`
+      <div class="modal-head"><h3>${isNew?"NEW ITEM":"EDIT ITEM " + escapeHtml(item.code||"")}</h3><button class="x" data-close>✕</button></div>
+      <div class="modal-body">
+        <div class="field"><label>GROUP</label>
+          <select id="mi-group">${b.groups.map(g=>`<option value="${g.id}" ${g.id===group.id?"selected":""}>${escapeHtml(g.name)}</option>`).join("")}</select>
+        </div>
+        <div class="field"><label>TITLE</label><input id="mi-title" value="${escapeHtml(item.title)}" placeholder="What needs to get done?"></div>
+        <div class="field-row">
+          <div class="field"><label>STATUS</label>
+            <select id="mi-status">${b.statuses.map(s=>`<option value="${s.id}" ${s.id===item.statusId?"selected":""}>${escapeHtml(s.label)}</option>`).join("")}</select>
+          </div>
+          <div class="field"><label>PRIORITY</label>
+            <select id="mi-prio">${["P1","P2","P3"].map(p=>`<option value="${p}" ${p===item.priority?"selected":""}>${p}</option>`).join("")}</select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>OWNER</label><input id="mi-owner" value="${escapeHtml(item.owner)}" placeholder="Name"></div>
+          <div class="field"><label>DUE DATE</label><input type="date" id="mi-due" value="${item.due||""}"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>TIME</label><input type="time" id="mi-time" value="${item.time||""}"><div class="time-preview" id="mi-time-preview">${item.time?formatTime12(item.time):"—"}</div></div>
+          <div class="field"><label>TAGS (comma separated)</label><input id="mi-tags" value="${escapeHtml((item.tags||[]).join(", "))}" placeholder="design, urgent"></div>
+        </div>
+        <div class="field">
+          <label>NOTES <span style="color:var(--text-faint);text-transform:none;letter-spacing:0;">— paste a link and it becomes clickable</span></label>
+          <textarea id="mi-notes" rows="3" placeholder="Additional context, links, etc...">${escapeHtml(item.notes||"")}</textarea>
+          <div class="note-preview" id="mi-notes-preview">${linkify(item.notes)}</div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        ${isNew ? '<span></span>' : '<button class="btn-danger" id="mi-delete">DELETE ITEM</button>'}
+        <div style="display:flex;gap:8px;">
+          <button class="btn-secondary" data-close>CANCEL</button>
+          <button class="btn-primary" id="mi-save">${isNew?"CREATE ITEM":"SAVE CHANGES"}</button>
+        </div>
+      </div>
+    `, root => {
+      root.querySelector("#mi-time").addEventListener("input", e => {
+        root.querySelector("#mi-time-preview").textContent = e.target.value ? formatTime12(e.target.value) : "—";
+      });
+      root.querySelector("#mi-notes").addEventListener("input", e => {
+        root.querySelector("#mi-notes-preview").innerHTML = linkify(e.target.value);
+      });
+      root.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click", closeModal));
+      if(!isNew){
+        root.querySelector("#mi-delete").addEventListener("click", () => {
+          if(confirm("Delete this item?")){ deleteItem(group.id, item.id); closeModal(); }
+        });
+      }
+      root.querySelector("#mi-save").addEventListener("click", () => {
+        const targetGroupId = root.querySelector("#mi-group").value;
+        const targetGroup = b.groups.find(g=>g.id===targetGroupId);
+        const payload = {
+          title: root.querySelector("#mi-title").value.trim() || "Untitled item",
+          statusId: root.querySelector("#mi-status").value,
+          priority: root.querySelector("#mi-prio").value,
+          owner: root.querySelector("#mi-owner").value.trim(),
+          due: root.querySelector("#mi-due").value,
+          time: root.querySelector("#mi-time").value,
+          tags: root.querySelector("#mi-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
+          notes: root.querySelector("#mi-notes").value.trim()
+        };
+        if(isNew){
+          payload.id = uid("itm");
+          payload.code = nextItemCode(b);
+          targetGroup.items.push(payload);
+        } else {
+          if(targetGroup.id !== group.id){
+            group.items = group.items.filter(i=>i.id!==item.id);
+            targetGroup.items.push({...item, ...payload});
+          } else {
+            Object.assign(item, payload);
+          }
+        }
+        save(); closeModal(); renderBoardBody();
+      });
+    });
+  }
+
+  // ---------- EVENT DELEGATION ----------
+  document.getElementById("boardBody").addEventListener("click", e => {
+    const th = e.target.closest("th[data-sort]");
+    if(th){ toggleSort(th.dataset.sort); return; }
+    const t = e.target.closest("[data-action]");
+    if(!t) return;
+    const action = t.dataset.action;
+    if(action === "add-item") openItemModal(t.dataset.group, null);
+    if(action === "edit-item") openItemModal(t.dataset.group, t.dataset.item);
+    if(action === "del-item") deleteItem(t.dataset.group, t.dataset.item);
+    if(action === "del-group") deleteGroup(t.dataset.group);
+  });
+  document.getElementById("boardBody").addEventListener("change", e => {
+    const t = e.target;
+    if(t.dataset.action === "set-status") setItemField(findGroupForItem(t.dataset.item), t.dataset.item, "statusId", t.value);
+    if(t.dataset.action === "set-prio") setItemField(findGroupForItem(t.dataset.item), t.dataset.item, "priority", t.value);
+  });
+  function findGroupForItem(itemId){
+    const b = getBoard();
+    const g = b.groups.find(gr => gr.items.some(i=>i.id===itemId));
+    return g ? g.id : null;
+  }
+
+  document.getElementById("newBoardBtn").addEventListener("click", openNewBoardModal);
+  document.getElementById("newGroupBtn").addEventListener("click", openNewGroupModal);
+  document.getElementById("newItemBtn").addEventListener("click", () => {
+    const b = getBoard();
+    if(!b.groups.length){ alert("Create a group first."); return; }
+    openItemModal(b.groups[0].id, null);
+  });
+  document.getElementById("viewToggle").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-view]");
+    if(!btn) return;
+    state.activeView = btn.dataset.view;
+    save(); renderTopbar(); renderBoardBody();
+  });
+  document.getElementById("searchInput").addEventListener("input", renderBoardBody);
+
+  document.getElementById("exportBtn").addEventListener("click", () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = `mission-board-backup-${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+  });
+  document.getElementById("importBtn").addEventListener("click", () => document.getElementById("importFile").click());
+  document.getElementById("importFile").addEventListener("change", e => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      try{
+        const parsed = JSON.parse(reader.result);
+        if(!parsed.boards || !Array.isArray(parsed.boards)) throw new Error("Invalid file format");
+        state = parsed;
+        save(); renderAll();
+      }catch(err){ alert("Could not import file: " + err.message); }
+    };
+    reader.readAsText(file);
+    e.target.value = "";
+  });
+
+  document.addEventListener("keydown", e => { if(e.key === "Escape") closeModal(); });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
