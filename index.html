@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Workly — Project Ops</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32,32 L32,2 A30,30 0 0,1 57.98,47 Z' fill='%235B7CFF'/%3E%3Cpath d='M32,32 L57.98,47 A30,30 0 0,1 6.02,47 Z' fill='%2300D4FF'/%3E%3Cpath d='M32,32 L6.02,47 A30,30 0 0,1 32,2 Z' fill='%2322C55E'/%3E%3Ccircle cx='32' cy='32' r='19' fill='%230c1120'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -30,8 +31,10 @@
   --font-sans:'Inter',system-ui,-apple-system,sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,monospace;
   --shadow-lg:0 20px 60px rgba(0,0,0,0.45);
+  color-scheme: dark;
 }
 html[data-theme="light"]{
+  color-scheme: light;
   --bg:#EEF1F8;
   --bg-elev:#F7F9FD;
   --panel:rgba(255,255,255,0.6);
@@ -44,6 +47,8 @@ html[data-theme="light"]{
   --shadow-lg:0 20px 50px rgba(30,40,80,0.12);
 }
 *{box-sizing:border-box;}
+select{background-color:var(--panel-solid);color:var(--text);}
+select option{background-color:var(--panel-solid);color:var(--text);}
 html,body{height:100%;margin:0;padding:0;}
 body{
   background:var(--bg);
@@ -192,29 +197,44 @@ html[data-theme="light"] .blob{opacity:.28;mix-blend-mode:normal;filter:blur(90p
 .group-head button{background:var(--panel);border:1px solid var(--border);color:var(--text-dim);font-size:11px;padding:6px 10px;border-radius:8px;}
 .group-head button:hover{color:var(--accent);}
 
-table.items{width:100%;border-collapse:collapse;}
-table.items th{text-align:left;font-size:10px;letter-spacing:1px;color:var(--text-faint);padding:9px 14px;border-bottom:1px solid var(--border-soft);font-weight:700;user-select:none;}
+table.items{width:100%;border-collapse:collapse;table-layout:fixed;}
+table.items th{text-align:left;font-size:10px;letter-spacing:1px;color:var(--text-faint);padding:9px 14px;border-bottom:1px solid var(--border-soft);font-weight:700;user-select:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 table.items th[data-sort]{cursor:pointer;transition:color .15s ease;}
 table.items th[data-sort]:hover{color:var(--accent);}
 table.items th.sort-active{color:var(--primary);}
 .sort-arrow{margin-left:4px;font-size:8px;opacity:.7;}
-table.items td{padding:11px 14px;border-bottom:1px solid var(--border-soft);font-size:12.5px;vertical-align:middle;}
+table.items td{padding:11px 14px;border-bottom:1px solid var(--border-soft);font-size:12.5px;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 table.items tr:last-child td{border-bottom:none;}
 table.items tr:hover{background:rgba(255,255,255,0.035);}
-.col-code{color:var(--text-faint);font-family:var(--font-mono);font-size:11px;width:64px;}
-.col-title{cursor:pointer;font-weight:500;}
+.col-code{color:var(--text-faint);font-family:var(--font-mono);font-size:11px;}
+.col-title{cursor:pointer;font-weight:500;white-space:normal !important;}
 .col-title:hover{color:var(--accent);}
+.editable-cell{cursor:text;}
+.editable-cell:hover{background:rgba(255,255,255,0.035);}
+.th-add{text-align:center !important;padding-left:0 !important;padding-right:0 !important;}
+.th-add-btn{background:var(--panel);border:1px solid var(--border);color:var(--text-dim);width:26px;height:26px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;transition:all .15s ease;padding:0;}
+.th-add-btn:hover{color:var(--accent);border-color:var(--accent);background:rgba(var(--accent-rgb),0.08);}
+.th-custom{position:relative;}
+.th-custom-del{position:absolute;right:2px;top:50%;transform:translateY(-50%);background:transparent;border:none;color:var(--text-faint);opacity:0;padding:2px;border-radius:5px;}
+.th-custom:hover .th-custom-del{opacity:.8;}
+.th-custom-del:hover{color:var(--danger) !important;opacity:1 !important;}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-size:10.5px;font-weight:700;letter-spacing:.3px;}
-select.status-select{background:var(--panel-solid);border:1px solid var(--border);color:var(--text);font-size:11px;padding:5px 8px;border-radius:8px;}
+select.status-select{background:var(--panel-solid);border:1px solid var(--border);color:var(--text);font-size:11px;padding:5px 8px;border-radius:8px;width:100%;}
 .prio-flag{display:inline-flex;align-items:center;gap:5px;font-weight:700;font-size:11px;}
 .prio-flag.p1{color:var(--danger);}
 .prio-flag.p2{color:var(--warning);}
 .prio-flag.p3{color:var(--text-dim);}
 .tag-chip{display:inline-block;background:rgba(var(--accent-rgb),0.12);color:var(--accent);font-size:10px;padding:2px 8px;border-radius:20px;margin:1px 2px 1px 0;}
-.owner-avatar{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:9.5px;font-weight:700;color:#fff;margin-right:6px;vertical-align:middle;}
-.row-actions{display:flex;gap:4px;justify-content:flex-end;}
-.row-actions button{background:transparent;border:none;color:var(--text-faint);padding:4px;border-radius:6px;}
+.owner-avatar{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:9.5px;font-weight:700;color:#fff;margin-right:6px;vertical-align:middle;flex-shrink:0;}
+.row-actions{display:flex;gap:4px;justify-content:center;padding-left:0 !important;padding-right:0 !important;}
+.row-actions button{background:transparent;border:none;color:var(--text-faint);width:26px;height:26px;padding:0;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;}
 .row-actions button:hover{color:var(--danger);background:rgba(239,68,68,0.1);}
+.cell-input{background:transparent;border:1px solid transparent;color:var(--text);font-size:12.5px;padding:4px 6px;border-radius:7px;width:100%;transition:all .12s ease;}
+.cell-input:hover{border-color:var(--border-soft);}
+.cell-input:focus{outline:none;border-color:var(--accent);background:var(--panel);}
+.cell-input[type="checkbox"]{width:16px;height:16px;accent-color:var(--primary);}
+.cell-owner{display:flex;align-items:center;gap:0;min-width:0;}
+.cell-owner span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
 /* ---------- KANBAN ---------- */
 .kanban-wrap{display:flex;gap:16px;height:100%;overflow-x:auto;padding-bottom:8px;}
@@ -400,6 +420,12 @@ function icon(name, size){
 /* ================= STATE ================= */
 const STORAGE_KEY = "workly.v2.state";
 const ACCENTS = ["#5B7CFF","#00D4FF","#22C55E","#F59E0B","#EF4444","#A855F7","#EC4899"];
+const CUSTOM_COL_TYPES = [
+  {value:"text", label:"Text"},
+  {value:"number", label:"Number"},
+  {value:"date", label:"Date"},
+  {value:"checkbox", label:"Checkbox"}
+];
 
 function uid(prefix){ return prefix + "_" + Math.random().toString(36).slice(2,9); }
 function todayStr(){ return new Date().toISOString().slice(0,10); }
@@ -486,14 +512,15 @@ function sampleBoard(){
     emoji: "🚀",
     itemSeq: 4,
     statuses,
+    customColumns: [],
     groups: [
       { id: uid("grp"), name:"Design", color:"#5B7CFF", items:[
-        {id:uid("itm"),code:"WK-1",title:"Finalize onboarding flow wireframes",description:"",statusId:"progress",priority:"P1",owner:"Mia",due:todayStr(),time:"14:00",tags:["design","ux"],checklist:[{id:uid("ck"),text:"Wireframe home",done:true},{id:uid("ck"),text:"Wireframe settings",done:false}],notes:"", createdAt:Date.now()},
-        {id:uid("itm"),code:"WK-2",title:"Ship new logo variants",description:"",statusId:"backlog",priority:"P3",owner:"Theo",due:"",time:"",tags:["brand"],checklist:[],notes:"", createdAt:Date.now()}
+        {id:uid("itm"),code:"WK-1",title:"Finalize onboarding flow wireframes",description:"",statusId:"progress",priority:"P1",owner:"Mia",due:todayStr(),time:"14:00",tags:["design","ux"],checklist:[{id:uid("ck"),text:"Wireframe home",done:true},{id:uid("ck"),text:"Wireframe settings",done:false}],notes:"", customFields:{}, createdAt:Date.now()},
+        {id:uid("itm"),code:"WK-2",title:"Ship new logo variants",description:"",statusId:"backlog",priority:"P3",owner:"Theo",due:"",time:"",tags:["brand"],checklist:[],notes:"", customFields:{}, createdAt:Date.now()}
       ]},
       { id: uid("grp"), name:"Engineering", color:"#00D4FF", items:[
-        {id:uid("itm"),code:"WK-3",title:"Set up CI pipeline",description:"",statusId:"done",priority:"P2",owner:"Sam",due:"",time:"",tags:["infra"],checklist:[],notes:"", createdAt:Date.now()},
-        {id:uid("itm"),code:"WK-4",title:"Fix attachment upload race condition",description:"",statusId:"review",priority:"P1",owner:"Sam",due:todayStr(),time:"",tags:["bug"],checklist:[],notes:"", createdAt:Date.now()}
+        {id:uid("itm"),code:"WK-3",title:"Set up CI pipeline",description:"",statusId:"done",priority:"P2",owner:"Sam",due:"",time:"",tags:["infra"],checklist:[],notes:"", customFields:{}, createdAt:Date.now()},
+        {id:uid("itm"),code:"WK-4",title:"Fix attachment upload race condition",description:"",statusId:"review",priority:"P1",owner:"Sam",due:todayStr(),time:"09:30",tags:["bug"],checklist:[],notes:"", customFields:{}, createdAt:Date.now()}
       ]}
     ]
   };
@@ -518,6 +545,20 @@ function load(){
   }catch(e){ return defaultState(); }
 }
 let state = load();
+
+/* Backfill fields for state saved by older versions of this app,
+   so boards/items created before customColumns / time existed
+   don't break the new table renderer. */
+function migrateState(){
+  (state.boards||[]).forEach(b => {
+    if(!Array.isArray(b.customColumns)) b.customColumns = [];
+    b.groups.forEach(g => g.items.forEach(i => {
+      if(!i.customFields || typeof i.customFields !== "object") i.customFields = {};
+      if(typeof i.time !== "string") i.time = "";
+    }));
+  });
+}
+migrateState();
 
 function save(){
   try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }catch(e){ console.error("Save failed", e); }
@@ -798,16 +839,43 @@ function matchesSearch(item, q){
     (item.tags||[]).some(t=>t.toLowerCase().includes(q));
 }
 
+/* Fixed pixel widths for every non-flexible column, in render order.
+   The TITLE column is intentionally left out of this map: with
+   table-layout:fixed, the one column with no declared <col> width
+   absorbs all remaining space, which is what keeps every group's
+   table — and every row within it — lined up on the same grid no
+   matter how much text a given cell holds. */
+function tableColumnPlan(board){
+  const cols = [
+    {key:"code", width:64},
+    {key:"title", width:null},
+    {key:"status", width:150},
+    {key:"priority", width:90},
+    {key:"owner", width:130},
+    {key:"due", width:104},
+    {key:"time", width:96}
+  ];
+  (board.customColumns||[]).forEach(c => cols.push({key:"custom_"+c.id, width:130, custom:c}));
+  cols.push({key:"actions", width:64});
+  return cols;
+}
+function renderColgroup(plan){
+  return `<colgroup>${plan.map(c=>`<col${c.width?` style="width:${c.width}px"`:""}>`).join("")}</colgroup>`;
+}
+
 function renderTable(body, board){
   const q = state.searchQuery || "";
   const sort = state.sort || {key:null, dir:1};
+  const plan = tableColumnPlan(board);
   body.innerHTML = board.groups.map(group => {
     let items = group.items.filter(i => matchesSearch(i, q));
     if(sort.key){
       items = items.slice().sort((a,b)=>{
-        let av = a[sort.key]||"", bv = b[sort.key]||"";
+        let av, bv;
         if(sort.key==="statusId"){ av = board.statuses.find(s=>s.id===a.statusId)?.label||""; bv = board.statuses.find(s=>s.id===b.statusId)?.label||""; }
-        return av.toString().localeCompare(bv.toString()) * sort.dir;
+        else if(sort.key.startsWith("custom_")){ av = (a.customFields||{})[sort.key.slice(7)] ?? ""; bv = (b.customFields||{})[sort.key.slice(7)] ?? ""; }
+        else { av = a[sort.key]||""; bv = b[sort.key]||""; }
+        return av.toString().localeCompare(bv.toString(), undefined, {numeric:true}) * sort.dir;
       });
     }
     const doneCount = group.items.filter(i => { const st = board.statuses.find(s=>s.id===i.statusId); return st && st.isDone; }).length;
@@ -824,6 +892,7 @@ function renderTable(body, board){
       </div>
       ${items.length ? `
       <table class="items">
+        ${renderColgroup(plan)}
         <thead><tr>
           <th class="col-code">CODE</th>
           <th data-sort="title" class="${sort.key==="title"?"sort-active":""}">TITLE ${arrow("title")}</th>
@@ -831,11 +900,17 @@ function renderTable(body, board){
           <th data-sort="priority" class="${sort.key==="priority"?"sort-active":""}">PRIORITY ${arrow("priority")}</th>
           <th data-sort="owner" class="${sort.key==="owner"?"sort-active":""}">OWNER ${arrow("owner")}</th>
           <th data-sort="due" class="${sort.key==="due"?"sort-active":""}">DUE ${arrow("due")}</th>
-          <th>TAGS</th>
-          <th></th>
+          <th data-sort="time" class="${sort.key==="time"?"sort-active":""}">TIME ${arrow("time")}</th>
+          ${(board.customColumns||[]).map(c => `
+            <th class="th-custom" data-sort="custom_${c.id}" title="${escapeHtml(c.name)} (${c.type})">
+              ${escapeHtml(c.name)} ${arrow("custom_"+c.id)}
+              <button type="button" class="th-custom-del" data-del-col="${c.id}" title="Remove column">${icon("trash",10)}</button>
+            </th>
+          `).join("")}
+          <th class="th-add"><button type="button" class="th-add-btn" id="addColBtn-${group.id}" data-action="add-column" title="Add column">${icon("plus",13)}</button></th>
         </tr></thead>
         <tbody>
-          ${items.map(item => renderRow(item, group, board)).join("")}
+          ${items.map(item => renderRow(item, group, board, plan)).join("")}
         </tbody>
       </table>` : `<div style="padding:16px;font-size:12px;color:var(--text-faint);">No tasks match. </div>`}
     </div>`;
@@ -844,23 +919,38 @@ function renderTable(body, board){
   bindTableEvents(body, board);
 }
 
-function renderRow(item, group, board){
+function renderCustomCell(item, col){
+  const val = (item.customFields||{})[col.id];
+  if(col.type === "checkbox"){
+    return `<input type="checkbox" class="cell-input" data-custom="${col.id}" data-item="${item.id}" data-type="checkbox" ${val?"checked":""}>`;
+  }
+  if(col.type === "number"){
+    return `<input type="number" class="cell-input" data-custom="${col.id}" data-item="${item.id}" data-type="number" value="${val!=null?escapeHtml(String(val)):""}" placeholder="—">`;
+  }
+  if(col.type === "date"){
+    return `<input type="date" class="cell-input" data-custom="${col.id}" data-item="${item.id}" data-type="date" value="${val||""}">`;
+  }
+  return `<input type="text" class="cell-input" data-custom="${col.id}" data-item="${item.id}" data-type="text" value="${escapeHtml(val||"")}" placeholder="—">`;
+}
+
+function renderRow(item, group, board, plan){
   const status = board.statuses.find(s=>s.id===item.statusId) || board.statuses[0];
   const overdue = isOverdue(item, board.statuses);
   const prioClass = item.priority.toLowerCase();
   return `
   <tr>
     <td class="col-code">${item.code}</td>
-    <td class="col-title" data-action="edit-item" data-group="${group.id}" data-item="${item.id}">${escapeHtml(item.title)}${(item.attachments||[]).length ? ` <span class="attach-count-chip">${icon("paperclip",10)} ${item.attachments.length}</span>` : ""}</td>
+    <td class="col-title" data-action="edit-item" data-field="title" data-group="${group.id}" data-item="${item.id}">${escapeHtml(item.title)}${(item.attachments||[]).length ? ` <span class="attach-count-chip">${icon("paperclip",10)} ${item.attachments.length}</span>` : ""}</td>
     <td>
       <select class="status-select" data-action="set-status" data-item="${item.id}">
         ${board.statuses.map(s=>`<option value="${s.id}" ${s.id===item.statusId?"selected":""}>${escapeHtml(s.label)}</option>`).join("")}
       </select>
     </td>
     <td><span class="prio-flag ${prioClass}">${icon("flag",11)} ${item.priority}</span></td>
-    <td>${item.owner ? `<span class="owner-avatar" style="background:${ownerColor(item.owner)}">${escapeHtml(item.owner.slice(0,2).toUpperCase())}</span>${escapeHtml(item.owner)}` : `<span style="color:var(--text-faint)">—</span>`}</td>
-    <td style="color:${overdue?"var(--danger)":"var(--text-dim)"}">${item.due || "—"}</td>
-    <td>${(item.tags||[]).map(t=>`<span class="tag-chip">${escapeHtml(t)}</span>`).join("")}</td>
+    <td class="editable-cell" data-field="owner" data-group="${group.id}" data-item="${item.id}">${item.owner ? `<span class="cell-owner"><span class="owner-avatar" style="background:${ownerColor(item.owner)}">${escapeHtml(item.owner.slice(0,2).toUpperCase())}</span><span>${escapeHtml(item.owner)}</span></span>` : `<span style="color:var(--text-faint)">—</span>`}</td>
+    <td class="editable-cell" data-field="due" data-group="${group.id}" data-item="${item.id}" style="color:${overdue?"var(--danger)":"var(--text-dim)"}">${item.due || "—"}</td>
+    <td class="editable-cell" data-field="time" data-group="${group.id}" data-item="${item.id}" style="color:var(--text-dim)">${item.time ? formatTime12(item.time) : "—"}</td>
+    ${(board.customColumns||[]).map(c => `<td>${renderCustomCell(item, c)}</td>`).join("")}
     <td class="row-actions">
       <button data-action="del-item" data-group="${group.id}" data-item="${item.id}">${icon("trash",13)}</button>
     </td>
@@ -869,7 +959,8 @@ function renderRow(item, group, board){
 
 function bindTableEvents(body, board){
   body.querySelectorAll("th[data-sort]").forEach(th => {
-    th.addEventListener("click", () => {
+    th.addEventListener("click", e => {
+      if(e.target.closest("[data-del-col]")) return;
       const key = th.dataset.sort;
       const sort = state.sort || {key:null, dir:1};
       state.sort = (sort.key===key) ? {key, dir:-sort.dir} : {key, dir:1};
@@ -884,11 +975,120 @@ function bindTableEvents(body, board){
       board.groups = board.groups.filter(g=>g.id!==b.dataset.group); save(); renderMainBody();
     }
   }));
-  body.querySelectorAll("[data-action='edit-item']").forEach(b=>b.addEventListener("click", () => openItemModal(b.dataset.group, b.dataset.item)));
+  // Title cell: single click opens the full task modal, double-click edits
+  // the title inline. A short delay lets us tell the two apart — without it
+  // the first click of a double-click would already pop the modal open.
+  body.querySelectorAll("[data-action='edit-item']").forEach(td => {
+    let clickTimer = null;
+    td.addEventListener("click", () => {
+      if(clickTimer){ return; }
+      clickTimer = setTimeout(() => {
+        clickTimer = null;
+        openItemModal(td.dataset.group, td.dataset.item);
+      }, 260);
+    });
+    td.addEventListener("dblclick", e => {
+      e.preventDefault();
+      if(clickTimer){ clearTimeout(clickTimer); clickTimer = null; }
+      startInlineCellEdit(td, board, td.dataset.field);
+    });
+  });
+  body.querySelectorAll(".editable-cell").forEach(td => {
+    td.addEventListener("dblclick", e => {
+      e.preventDefault();
+      startInlineCellEdit(td, board, td.dataset.field);
+    });
+  });
   body.querySelectorAll("[data-action='del-item']").forEach(b=>b.addEventListener("click", () => deleteItem(b.dataset.group, b.dataset.item)));
   body.querySelectorAll("[data-action='set-status']").forEach(sel => sel.addEventListener("change", e => {
     setItemStatus(board, e.target.dataset.item, e.target.value);
   }));
+  body.querySelectorAll("[data-action='add-column']").forEach(b => b.addEventListener("click", () => openNewColumnModal(board)));
+  body.querySelectorAll("[data-del-col]").forEach(b => b.addEventListener("click", e => {
+    e.stopPropagation();
+    if(!confirm("Remove this column? Values stored in it will be deleted.")) return;
+    const colId = b.dataset.delCol;
+    board.customColumns = board.customColumns.filter(c=>c.id!==colId);
+    board.groups.forEach(g => g.items.forEach(i => { if(i.customFields) delete i.customFields[colId]; }));
+    save(); renderMainBody();
+  }));
+  body.querySelectorAll(".cell-input").forEach(input => {
+    input.addEventListener("change", e => {
+      const item = findItem(board, input.dataset.item);
+      if(!item) return;
+      if(!item.customFields) item.customFields = {};
+      const colId = input.dataset.custom;
+      if(input.dataset.type === "checkbox") item.customFields[colId] = input.checked;
+      else if(input.dataset.type === "number") item.customFields[colId] = input.value === "" ? "" : Number(input.value);
+      else item.customFields[colId] = input.value;
+      save();
+    });
+    input.addEventListener("keydown", e => {
+      if(e.key === "Enter"){ e.preventDefault(); input.blur(); }
+    });
+    input.addEventListener("click", e => e.stopPropagation());
+  });
+}
+
+/* Inline (double-click) cell editing for Title / Owner / Due / Time in
+   table view, so quick edits don't require opening the full task modal. */
+function startInlineCellEdit(td, board, field){
+  const itemId = td.dataset.item;
+  const item = findItem(board, itemId);
+  if(!item || !field) return;
+
+  let input;
+  if(field === "due"){
+    input = document.createElement("input");
+    input.type = "date";
+    input.value = item.due || "";
+  } else if(field === "time"){
+    input = document.createElement("input");
+    input.type = "time";
+    input.value = item.time || "";
+  } else {
+    input = document.createElement("input");
+    input.type = "text";
+    input.value = field === "title" ? item.title : (item.owner || "");
+  }
+  input.className = "cell-input";
+
+  td.innerHTML = "";
+  td.appendChild(input);
+  input.focus();
+  if(input.type === "text") input.select();
+
+  let committed = false;
+  function commit(){
+    if(committed) return;
+    committed = true;
+    if(field === "title") item.title = input.value.trim() || "Untitled task";
+    else if(field === "owner") item.owner = input.value.trim();
+    else if(field === "due") item.due = input.value;
+    else if(field === "time") item.time = input.value;
+    save();
+    renderMainBody();
+  }
+  function cancel(){
+    if(committed) return;
+    committed = true;
+    renderMainBody();
+  }
+
+  input.addEventListener("blur", commit);
+  input.addEventListener("keydown", e => {
+    if(e.key === "Enter"){ e.preventDefault(); commit(); }
+    else if(e.key === "Escape"){ e.preventDefault(); cancel(); }
+  });
+  input.addEventListener("click", e => e.stopPropagation());
+}
+
+function findItem(board, itemId){
+  for(const g of board.groups){
+    const item = g.items.find(i=>i.id===itemId);
+    if(item) return item;
+  }
+  return null;
 }
 
 function setItemStatus(board, itemId, statusId){
@@ -912,6 +1112,32 @@ function deleteItem(groupId, itemId){
   if(item) deleteAttachmentsFor([item]);
   group.items = group.items.filter(i=>i.id!==itemId);
   save(); renderMainBody();
+}
+
+/* ================= NEW CUSTOM COLUMN MODAL ================= */
+function openNewColumnModal(board){
+  openModal(`
+    <div class="modal-head"><h3>ADD COLUMN</h3><button class="x" data-close>✕</button></div>
+    <div class="modal-body">
+      <div class="field"><label>COLUMN NAME</label><input id="nc-name" placeholder="e.g. Budget, Client, Reviewed" autofocus></div>
+      <div class="field"><label>DATA TYPE</label>
+        <select id="nc-type">${CUSTOM_COL_TYPES.map(t=>`<option value="${t.value}">${t.label}</option>`).join("")}</select>
+      </div>
+    </div>
+    <div class="modal-foot"><span></span>
+      <div style="display:flex;gap:8px;"><button class="btn-secondary" data-close>Cancel</button><button class="btn-primary" id="nc-create">Add Column</button></div>
+    </div>
+  `, root => {
+    root.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click", closeModal));
+    root.querySelector("#nc-create").addEventListener("click", () => {
+      const name = root.querySelector("#nc-name").value.trim();
+      if(!name){ alert("Give the column a name."); return; }
+      const type = root.querySelector("#nc-type").value;
+      board.customColumns = board.customColumns || [];
+      board.customColumns.push({id: uid("col"), name, type});
+      save(); closeModal(); renderMainBody();
+    });
+  });
 }
 
 /* ================= KANBAN VIEW ================= */
@@ -968,7 +1194,7 @@ function renderKCard(item, group, board){
       <span>${item.owner ? `<span class="owner-avatar" style="background:${ownerColor(item.owner)};width:18px;height:18px;font-size:8.5px;">${escapeHtml(item.owner.slice(0,2).toUpperCase())}</span>` : ""}</span>
       <span style="display:flex;align-items:center;gap:8px;">
         ${(item.attachments||[]).length ? `<span class="attach-count-chip">${icon("paperclip",11)} ${item.attachments.length}</span>` : ""}
-        <span style="color:${overdue?"var(--danger)":"var(--text-faint)"}">${item.due||""}</span>
+        <span style="color:${overdue?"var(--danger)":"var(--text-faint)"}">${item.due||""}${item.time?" "+formatTime12(item.time):""}</span>
       </span>
     </div>
     <div class="kc-tags">${(item.tags||[]).slice(0,3).map(t=>`<span class="tag-chip">${escapeHtml(t)}</span>`).join("")}</div>
@@ -999,7 +1225,7 @@ function openNewBoardModal(){
     }));
     root.querySelector("#nb-create").addEventListener("click", () => {
       const name = root.querySelector("#nb-name").value.trim() || "Untitled Board";
-      const board = { id: uid("brd"), name, emoji: selEmoji, itemSeq:0, statuses: defaultStatuses(), groups: [] };
+      const board = { id: uid("brd"), name, emoji: selEmoji, itemSeq:0, statuses: defaultStatuses(), customColumns: [], groups: [] };
       state.boards.push(board);
       state.route = { type:"board", boardId: board.id, view:"table" };
       save(); closeModal(); renderAll();
@@ -1041,7 +1267,7 @@ function openItemModal(groupId, itemId, presetStatus){
   const isNew = !itemId;
   const group = board.groups.find(g=>g.id===groupId) || board.groups[0];
   if(!group){ alert("Create a group first."); return; }
-  const item = isNew ? {title:"", description:"", statusId: presetStatus||board.statuses[0].id, priority:"P2", owner:"", due:"", time:"", tags:[], checklist:[], notes:"", attachments:[]} : group.items.find(i=>i.id===itemId);
+  const item = isNew ? {title:"", description:"", statusId: presetStatus||board.statuses[0].id, priority:"P2", owner:"", due:"", time:"", tags:[], checklist:[], notes:"", attachments:[], customFields:{}} : group.items.find(i=>i.id===itemId);
 
   let checklist = (item.checklist||[]).map(c=>({...c}));
   let attachments = (item.attachments||[]).map(a=>({...a}));
@@ -1151,6 +1377,8 @@ function openItemModal(groupId, itemId, presetStatus){
     renderAttachments(root);
   }
 
+  const customColumns = board.customColumns || [];
+
   openModal(`
     <div class="modal-head"><h3>${isNew?"NEW TASK":"EDIT " + escapeHtml(item.code||"")}</h3><button class="x" data-close>✕</button></div>
     <div class="modal-body">
@@ -1171,6 +1399,22 @@ function openItemModal(groupId, itemId, presetStatus){
         <div class="field"><label>TIME</label><input type="time" id="mi-time" value="${item.time||""}"><div class="time-preview" id="mi-time-preview">${item.time?formatTime12(item.time):"—"}</div></div>
         <div class="field"><label>TAGS (comma separated)</label><input id="mi-tags" value="${escapeHtml((item.tags||[]).join(", "))}" placeholder="design, urgent"></div>
       </div>
+      ${customColumns.length ? `
+      <div class="field-row" style="grid-template-columns:repeat(2,1fr);">
+        ${customColumns.map(c => {
+          const val = (item.customFields||{})[c.id];
+          if(c.type==="checkbox"){
+            return `<div class="field"><label>${escapeHtml(c.name).toUpperCase()}</label><div style="display:flex;align-items:center;height:36px;"><input type="checkbox" class="mi-custom" data-col="${c.id}" data-type="checkbox" style="width:16px;height:16px;accent-color:var(--primary);" ${val?"checked":""}></div></div>`;
+          }
+          if(c.type==="number"){
+            return `<div class="field"><label>${escapeHtml(c.name).toUpperCase()}</label><input type="number" class="mi-custom" data-col="${c.id}" data-type="number" value="${val!=null?escapeHtml(String(val)):""}"></div>`;
+          }
+          if(c.type==="date"){
+            return `<div class="field"><label>${escapeHtml(c.name).toUpperCase()}</label><input type="date" class="mi-custom" data-col="${c.id}" data-type="date" value="${val||""}"></div>`;
+          }
+          return `<div class="field"><label>${escapeHtml(c.name).toUpperCase()}</label><input type="text" class="mi-custom" data-col="${c.id}" data-type="text" value="${escapeHtml(val||"")}"></div>`;
+        }).join("")}
+      </div>` : ""}
       <div class="field">
         <label>CHECKLIST</label>
         <div id="mi-checklist"></div>
@@ -1198,6 +1442,7 @@ function openItemModal(groupId, itemId, presetStatus){
     </div>
   `, root => {
     renderChecklist(root);
+    renderAttachments(root);
     root.querySelector("#mi-time").addEventListener("input", e => {
       root.querySelector("#mi-time-preview").textContent = e.target.value ? formatTime12(e.target.value) : "—";
     });
@@ -1207,6 +1452,17 @@ function openItemModal(groupId, itemId, presetStatus){
     root.querySelector("#mi-add-check").addEventListener("click", () => {
       checklist.push({id: uid("ck"), text:"", done:false});
       renderChecklist(root);
+    });
+    const dropZone = root.querySelector("#mi-attach-drop");
+    const fileInput = root.querySelector("#mi-attach-input");
+    dropZone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", e => handleFiles(e.target.files, root));
+    dropZone.addEventListener("dragover", e => { e.preventDefault(); dropZone.classList.add("drag-over"); });
+    dropZone.addEventListener("dragleave", () => dropZone.classList.remove("drag-over"));
+    dropZone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropZone.classList.remove("drag-over");
+      handleFiles(e.dataTransfer.files, root);
     });
     root.querySelectorAll("[data-close]").forEach(b=>b.addEventListener("click", closeModal));
     if(!isNew){
@@ -1220,6 +1476,13 @@ function openItemModal(groupId, itemId, presetStatus){
       const newStatusId = root.querySelector("#mi-status").value;
       const wasDone = !isNew && (board.statuses.find(s=>s.id===item.statusId)||{}).isDone;
       const nowDone = (board.statuses.find(s=>s.id===newStatusId)||{}).isDone;
+      const customFields = {...(item.customFields||{})};
+      root.querySelectorAll(".mi-custom").forEach(el => {
+        const colId = el.dataset.col;
+        if(el.dataset.type === "checkbox") customFields[colId] = el.checked;
+        else if(el.dataset.type === "number") customFields[colId] = el.value === "" ? "" : Number(el.value);
+        else customFields[colId] = el.value;
+      });
       const payload = {
         title: root.querySelector("#mi-title").value.trim() || "Untitled task",
         description: root.querySelector("#mi-desc").value.trim(),
@@ -1230,7 +1493,9 @@ function openItemModal(groupId, itemId, presetStatus){
         time: root.querySelector("#mi-time").value,
         tags: root.querySelector("#mi-tags").value.split(",").map(t=>t.trim()).filter(Boolean),
         checklist: checklist.filter(c=>c.text.trim()!==""),
-        notes: root.querySelector("#mi-notes").value.trim()
+        notes: root.querySelector("#mi-notes").value.trim(),
+        attachments: attachments,
+        customFields: customFields
       };
       if(isNew){
         payload.id = uid("itm");
@@ -1302,6 +1567,7 @@ document.getElementById("importFile").addEventListener("change", e => {
       state = parsed;
       if(!state.settings) state.settings = {theme:"dark", accent:"#5B7CFF"};
       if(!state.route) state.route = {type:"dashboard"};
+      migrateState();
       save(); applyTheme(); renderAll();
     }catch(err){ alert("Could not import file: " + err.message); }
   };
